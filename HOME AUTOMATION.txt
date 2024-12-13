@@ -1,0 +1,59 @@
+#include <DHT.h>
+
+// Define pin connections
+const int pirPin = 2;
+const int lightPin = 3;
+const int fanPin = 4;
+const int alarmPin = 5;
+const int dhtPin = 6;
+
+// Define DHT11 sensor object
+DHT dht(dhtPin, DHT11);
+
+// Define temperature threshold
+const float temperatureThreshold = 30.0;
+
+void setup() {
+  // Initialize pin modes
+  pinMode(pirPin, INPUT);
+  pinMode(lightPin, OUTPUT);
+  pinMode(fanPin, OUTPUT);
+  pinMode(alarmPin, OUTPUT);
+
+  // Initialize DHT11 sensor
+  dht.begin();
+}
+
+void loop() {
+  // Read PIR sensor value
+  int pirValue = digitalRead(pirPin);
+
+  // Read temperature and humidity from DHT11 sensor
+  float temperature = dht.readTemperature();
+  float humidity = dht.readHumidity();
+
+  // Turn on lights if motion is detected
+  if (pirValue == HIGH) {
+    digitalWrite(lightPin, HIGH);
+  } else {
+    digitalWrite(lightPin, LOW);
+  }
+
+  // Control fan based on temperature
+  if (temperature > temperatureThreshold) {
+    digitalWrite(fanPin, HIGH);
+  } else {
+    digitalWrite(fanPin, LOW);
+  }
+
+  // Activate alarm if temperature exceeds threshold and motion is detected
+  if (temperature > temperatureThreshold && pirValue == HIGH) {
+    digitalWrite(alarmPin, HIGH);
+  } else {
+    digitalWrite(alarmPin, LOW);
+  }
+
+  delay(1000); // 1-second delay between readings
+}
+
+
