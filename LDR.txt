@@ -1,0 +1,81 @@
+#include <Arduino.h>
+#include <Servo.h>
+
+// Define servo motor pins
+const int servoHorizontalPin = 9;
+const int servoVerticalPin = 10;
+
+// Define LDR pins
+const int ldrTopPin = A0;
+const int ldrBottomPin = A1;
+const int ldrLeftPin = A2;
+const int ldrRightPin = A3;
+
+// Define servo motor objects
+Servo servoHorizontal;
+Servo servoVertical;
+
+// Define variables to store LDR values
+int ldrTopValue = 0;
+int ldrBottomValue = 0;
+int ldrLeftValue = 0;
+int ldrRightValue = 0;
+
+// Define variables to store servo motor positions
+int servoHorizontalPosition = 90;
+int servoVerticalPosition = 90;
+
+// Define debounce variables
+bool debounceHorizontal = false;
+bool debounceVertical = false;
+unsigned long debounceTime = 50; // 50ms debounce time
+
+void setup() {
+  // Initialize servo motor pins
+  servoHorizontal.attach(servoHorizontalPin);
+  servoVertical.attach(servoVerticalPin);
+
+  // Initialize LDR pins as inputs
+  pinMode(ldrTopPin, INPUT);
+  pinMode(ldrBottomPin, INPUT);
+  pinMode(ldrLeftPin, INPUT);
+  pinMode(ldrRightPin, INPUT);
+
+  // Initialize servo motor positions
+  servoHorizontal.write(servoHorizontalPosition);
+  servoVertical.write(servoVerticalPosition);
+}
+
+void loop() {
+  // Read LDR values
+  ldrTopValue = analogRead(ldrTopPin);
+  ldrBottomValue = analogRead(ldrBottomPin);
+  ldrLeftValue = analogRead(ldrLeftPin);
+  ldrRightValue = analogRead(ldrRightPin);
+
+  // Calculate horizontal and vertical movements
+  int horizontalMovement = ldrLeftValue - ldrRightValue;
+  int verticalMovement = ldrTopValue - ldrBottomValue;
+
+  // Apply debounce logic
+  if (abs(horizontalMovement) > 50 && !debounceHorizontal) {
+    debounceHorizontal = true;
+    servoHorizontalPosition += horizontalMovement / 10;
+    servoHorizontal.write(servoHorizontalPosition);
+    delay(debounceTime);
+  } else if (abs(horizontalMovement) < 20) {
+    debounceHorizontal = false;
+  }
+
+  if (abs(verticalMovement) > 50 && !debounceVertical) {
+    debounceVertical = true;
+    servoVerticalPosition += verticalMovement / 10;
+    servoVertical.write(servoVerticalPosition);
+    delay(debounceTime);
+  } else if (abs(verticalMovement) < 20) {
+    debounceVertical = false;
+  }
+
+  delay(50); // 50ms delay between readings
+}
+
